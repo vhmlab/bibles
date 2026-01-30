@@ -7,7 +7,7 @@ services:
     volumes:
       - /srv/bible/bibles.db:/app/bibles.db:ro
     ports:
-      - "8000:8000"
+      - "8001:8000"
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
