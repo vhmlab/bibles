@@ -1,9 +1,41 @@
+# Python
 .venv
-__pycache__
+venv/
+__pycache__/
+*.py[cod]
 *.pyc
+
+# Virtual envs and build artifacts
+build/
+dist/
+*.egg-info/
+
+# Git
 .git
-*.log
+.github
+
+# Database
+bibles.db
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
 .env
-tests
-.vscode
+
+# Logs
+*.log
+logs/
+
+# Tests
+tests/
+.pytest_cache/
+
+# Docs and misc
+docs/
 README.md
+

@@ -1,10 +1,10 @@
 # Debian-slim based image for broader wheel compatibility and smaller build surprises
-FROM python:3.14.2-slim
+FROM python:3.14.2-slim AS builder
 
 ENV PYTHONUNBUFFERED=1
-WORKDIR /app
+WORKDIR /wheels
 
-# Install build dependencies for packages that require compilation (pydantic-core, etc.)
+# Install build dependencies required to build wheels
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
@@ -16,16 +16,37 @@ RUN apt-get update && \
         rustc && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
+# Build wheels for all requirements so final image doesn't need build deps
+COPY requirements.txt /wheels/requirements.txt
+RUN python -m pip install --upgrade pip setuptools wheel && \
+    pip wheel --no-cache-dir --wheel-dir /wheels -r /wheels/requirements.txt
+
+
+FROM python:3.14.2-slim
+
+ENV PYTHONUNBUFFERED=1
+WORKDIR /app
+
+# Install minimal runtime libs if needed
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy prebuilt wheels and install from them (no build tools needed)
+COPY --from=builder /wheels /wheels
 COPY requirements.txt /app/requirements.txt
 RUN python -m pip install --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r /app/requirements.txt
+    pip install --no-cache-dir --no-index --find-links=/wheels -r /app/requirements.txt
 
-# Copy application code
-COPY . /app
+# Create non-root user before copying files so we can use --chown
+RUN useradd --create-home --shell /bin/sh appuser
 
-# Create non-root user and switch
-RUN useradd --create-home --shell /bin/sh appuser && chown -R appuser:appuser /app
+# Copy only the application package and required files and set ownership in one step
+# This avoids creating an extra chown layer and keeps the image smaller.
+COPY --chown=appuser:appuser app/ /app/app
+COPY --chown=appuser:appuser requirements.txt /app/requirements.txt
+
 USER appuser
 
 # Default DB path (can be overridden at runtime with BIBLES_DB_PATH)
