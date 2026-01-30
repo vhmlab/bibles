@@ -1,11 +1,18 @@
-"""Database connection and session management."""
+"""Database connection and session management.
+
+Database file path is configurable via the `BIBLES_DB_PATH` environment
+variable to make the deployment container-friendly. If the environment
+variable is not set, it falls back to `bibles.db` in the project root.
+"""
+import os
 import sqlite3
 from contextlib import contextmanager
 from typing import Generator
 from pathlib import Path
 
 
-DATABASE_PATH = Path(__file__).parent.parent / "bibles.db"
+DEFAULT_DB = Path(__file__).parent.parent / "bibles.db"
+DATABASE_PATH = Path(os.getenv("BIBLES_DB_PATH", str(DEFAULT_DB))).resolve()
 
 
 @contextmanager
@@ -16,7 +23,7 @@ def get_db() -> Generator[sqlite3.Connection, None, None]:
     Yields:
         sqlite3.Connection: Database connection with row factory set to Row.
     """
-    conn = sqlite3.connect(DATABASE_PATH)
+    conn = sqlite3.connect(str(DATABASE_PATH))
     conn.row_factory = sqlite3.Row
     try:
         yield conn
@@ -31,6 +38,6 @@ def get_db_connection() -> sqlite3.Connection:
     Returns:
         sqlite3.Connection: Database connection with row factory set to Row.
     """
-    conn = sqlite3.connect(DATABASE_PATH)
+    conn = sqlite3.connect(str(DATABASE_PATH))
     conn.row_factory = sqlite3.Row
     return conn

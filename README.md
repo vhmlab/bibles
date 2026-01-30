@@ -160,6 +160,29 @@ Example production command:
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
+## Docker / Compose
+
+This repository includes a `Dockerfile` and `docker-compose.yml` for local development.
+
+Build the image:
+
+```bash
+docker compose build
+```
+
+Run (with host DB mounted):
+
+```bash
+docker compose up
+```
+
+Alternatively, run a single container with the DB mounted:
+
+```bash
+docker build -t bible-api:latest .
+docker run -p 8000:8000 -v "$(pwd)/bibles.db":/app/bibles.db:ro -e BIBLES_DB_PATH=/app/bibles.db bible-api:latest
+```
+
 ## License
 
 MIT License
