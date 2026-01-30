@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  bible-api:
+    image: ghcr.io/<OWNER>/bible-api:latest
+    environment:
+      - BIBLES_DB_PATH=/app/bibles.db
+    volumes:
+      - /srv/bible/bibles.db:/app/bibles.db:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

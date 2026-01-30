@@ -183,6 +183,52 @@ docker build -t bible-api:latest .
 docker run -p 8000:8000 -v "$(pwd)/bibles.db":/app/bibles.db:ro -e BIBLES_DB_PATH=/app/bibles.db bible-api:latest
 ```
 
+## Deploying with Portainer or Production
+
+The CI workflow publishes images to GitHub Container Registry (GHCR) as:
+
+- `ghcr.io/<OWNER>/bible-api:latest`
+- `ghcr.io/<OWNER>/bible-api:<commit-sha>`
+
+Replace `<OWNER>` with your GitHub username or organization.
+
+Recommended production stack (use this file: `docker-compose.prod.yml`):
+
+```yaml
+version: "3.8"
+services:
+  bible-api:
+    image: ghcr.io/<OWNER>/bible-api:latest
+    environment:
+      - BIBLES_DB_PATH=/app/bibles.db
+    volumes:
+      - /srv/bible/bibles.db:/app/bibles.db:ro
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+```
+
+Portainer: create a new Stack → choose "Repository" or paste the compose content, set branch `main` and compose path `docker-compose.prod.yml` (or paste the YAML directly). If GHCR is private, add registry credentials in Portainer (Registry: `ghcr.io`).
+
+Host DB setup example:
+
+```bash
+sudo mkdir -p /srv/bible
+sudo cp ./bibles.db /srv/bible/bibles.db
+sudo chmod 0444 /srv/bible/bibles.db
+```
+
+Then deploy the stack in Portainer or run locally with:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
 ## License
 
 MIT License

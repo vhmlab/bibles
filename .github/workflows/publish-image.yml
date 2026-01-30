@@ -3,6 +3,15 @@ name: Build and publish Docker image
 on:
   push:
     branches: [ main ]
+    # Only run on pushes that touch files relevant to building the image.
+    paths:
+      - 'Dockerfile'
+      - 'app/**'
+      - 'requirements.txt'
+      - 'pyproject.toml'
+      - 'setup.cfg'
+      - 'setup.py'
+      - 'poetry.lock'
   workflow_dispatch:
 
 permissions:
