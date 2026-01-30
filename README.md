@@ -187,10 +187,10 @@ docker run -p 8000:8000 -v "$(pwd)/bibles.db":/app/bibles.db:ro -e BIBLES_DB_PAT
 
 The CI workflow publishes images to GitHub Container Registry (GHCR) as:
 
-- `ghcr.io/<OWNER>/bible-api:latest`
-- `ghcr.io/<OWNER>/bible-api:<commit-sha>`
+- `ghcr.io/vhmlab/bible-api:latest`
+- `ghcr.io/vhmlab/bible-api:<commit-sha>`
 
-Replace `<OWNER>` with your GitHub username or organization.
+Replace `vhmlab` with your GitHub username or organization if different.
 
 Recommended production stack (use this file: `docker-compose.prod.yml`):
 
@@ -198,7 +198,7 @@ Recommended production stack (use this file: `docker-compose.prod.yml`):
 version: "3.8"
 services:
   bible-api:
-    image: ghcr.io/<OWNER>/bible-api:latest
+    image: ghcr.io/vhmlab/bible-api:latest
     environment:
       - BIBLES_DB_PATH=/app/bibles.db
     volumes:
