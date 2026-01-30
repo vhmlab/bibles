@@ -78,3 +78,30 @@ def get_translation_by_abbreviation(abbreviation: str):
             raise HTTPException(status_code=404, detail="Translation not found")
         
         return Translation(**dict(row))
+
+
+@router.get("/language/{language}", response_model=List[Translation])
+def get_translations_by_language(language: str):
+    """
+    Get all translations for a specific language.
+    
+    Args:
+        language: The language of the translations (e.g., English, Spanish).
+        
+    Returns:
+        List[Translation]: List of translations in the specified language.
+        
+    Raises:
+        HTTPException: If no translations found for the language.
+    """
+    with get_db() as conn:
+        cursor = conn.execute(
+            "SELECT id, name, abbreviation, language FROM translations WHERE language = ? ORDER BY name",
+            (language,)
+        )
+        translations = [Translation(**dict(row)) for row in cursor.fetchall()]
+        
+        if not translations:
+            raise HTTPException(status_code=404, detail=f"No translations found for language: {language}")
+        
+        return translations
