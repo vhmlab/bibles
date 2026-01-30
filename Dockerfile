@@ -27,10 +27,11 @@ FROM python:3.14.2-slim
 ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
-# Install minimal runtime libs if needed
+# Install minimal runtime libs needed at runtime (include curl for healthchecks)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates && \
+        ca-certificates \
+        curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy prebuilt wheels and install from them (no build tools needed)
