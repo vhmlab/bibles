@@ -1,0 +1,35 @@
+{
+  "description": "Machine-readable schema for the Bible translations SQLite database",
+  "tables": {
+    "translations": {
+      "columns": [
+        {"name": "id", "type": "INTEGER", "primary_key": true},
+        {"name": "name", "type": "TEXT"},
+        {"name": "abbreviation", "type": "TEXT", "unique": true},
+        {"name": "language", "type": "TEXT"}
+      ]
+    },
+    "books": {
+      "columns": [
+        {"name": "id", "type": "INTEGER", "primary_key": true},
+        {"name": "name", "type": "TEXT", "unique": true},
+        {"name": "testament", "type": "TEXT", "notes": "OT or NT"}
+      ]
+    },
+    "verses": {
+      "columns": [
+        {"name": "id", "type": "INTEGER", "primary_key": true},
+        {"name": "translation_id", "type": "INTEGER", "foreign_key": {"table": "translations", "column": "id"}},
+        {"name": "book_id", "type": "INTEGER", "foreign_key": {"table": "books", "column": "id"}},
+        {"name": "chapter", "type": "INTEGER"},
+        {"name": "verse", "type": "INTEGER"},
+        {"name": "text", "type": "TEXT"}
+      ],
+      "indexes": [
+        {"name": "idx_verses_book_chapter_verse", "columns": ["book_id","chapter","verse"]},
+        {"name": "idx_verses_translation_book_chapter_verse", "columns": ["translation_id","book_id","chapter","verse"]},
+        {"name": "ux_verse_unique", "columns": ["translation_id","book_id","chapter","verse"], "unique": true}
+      ]
+    }
+  }
+}
