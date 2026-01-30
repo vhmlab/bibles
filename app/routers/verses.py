@@ -180,4 +180,32 @@ def get_chapter(
     Raises:
         HTTPException: If no verses found.
     """
-    return get_verses(translation=translation, book=book, chapter=chapter)
+    with get_db() as conn:
+        query = """
+            SELECT 
+                v.id,
+                t.name as translation_name,
+                t.abbreviation as translation_abbreviation,
+                b.name as book_name,
+                b.testament,
+                v.chapter,
+                v.verse,
+                v.text
+            FROM verses v
+            JOIN translations t ON v.translation_id = t.id
+            JOIN books b ON v.book_id = b.id
+            WHERE t.abbreviation = ? AND b.name = ? AND v.chapter = ?
+            ORDER BY v.verse
+        """
+        params = [translation.upper(), book, chapter]
+        
+        cursor = conn.execute(query, params)
+        verses = [VerseWithDetails(**dict(row)) for row in cursor.fetchall()]
+        
+        if not verses:
+            raise HTTPException(
+                status_code=404,
+                detail="No verses found for the specified criteria"
+            )
+        
+        return verses
