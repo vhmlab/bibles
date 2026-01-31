@@ -9,6 +9,7 @@ import sqlite3
 from contextlib import contextmanager
 from typing import Generator
 from pathlib import Path
+from fastapi import HTTPException
 
 
 DEFAULT_DB = Path(__file__).parent.parent / "bibles.db"
@@ -23,8 +24,13 @@ def get_db() -> Generator[sqlite3.Connection, None, None]:
     Yields:
         sqlite3.Connection: Database connection with row factory set to Row.
     """
-    conn = sqlite3.connect(str(DATABASE_PATH))
-    conn.row_factory = sqlite3.Row
+    try:
+        conn = sqlite3.connect(str(DATABASE_PATH))
+        conn.row_factory = sqlite3.Row
+    except sqlite3.OperationalError as e:
+        # Raise an HTTP-friendly error so FastAPI can return JSON
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")
+
     try:
         yield conn
     finally:
@@ -38,6 +44,9 @@ def get_db_connection() -> sqlite3.Connection:
     Returns:
         sqlite3.Connection: Database connection with row factory set to Row.
     """
-    conn = sqlite3.connect(str(DATABASE_PATH))
-    conn.row_factory = sqlite3.Row
-    return conn
+    try:
+        conn = sqlite3.connect(str(DATABASE_PATH))
+        conn.row_factory = sqlite3.Row
+        return conn
+    except sqlite3.OperationalError as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}")

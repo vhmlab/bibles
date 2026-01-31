@@ -1,6 +1,9 @@
 """Main FastAPI application for Bible translations API."""
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+import sqlite3
+import logging
 
 from .routers import translations, books, verses
 
@@ -54,6 +57,29 @@ app.add_middleware(
 app.include_router(translations.router)
 app.include_router(books.router)
 app.include_router(verses.router)
+
+
+# Exception handlers to ensure JSON responses for errors
+@app.exception_handler(sqlite3.OperationalError)
+async def sqlite_exception_handler(request: Request, exc: sqlite3.OperationalError):
+    logging.exception("SQLite OperationalError: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "database_error", "detail": str(exc)},
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    # Do not mask HTTPExceptions which already carry status codes/details
+    if isinstance(exc, HTTPException):
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+    logging.exception("Unhandled exception: %s", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"error": "internal_server_error", "detail": str(exc)},
+    )
 
 
 @app.get("/", tags=["root"])
