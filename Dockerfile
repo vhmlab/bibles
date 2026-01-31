@@ -51,7 +51,7 @@ COPY --chown=appuser:appuser requirements.txt /app/requirements.txt
 USER appuser
 
 # Default DB path (can be overridden at runtime with BIBLES_DB_PATH)
-ENV BIBLES_DB_PATH=/app/bibles.db
+ENV BIBLES_DB_PATH=/data/bibles.db
 
 EXPOSE 18001
 
