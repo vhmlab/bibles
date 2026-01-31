@@ -53,6 +53,6 @@ USER appuser
 # Default DB path (can be overridden at runtime with BIBLES_DB_PATH)
 ENV BIBLES_DB_PATH=/app/bibles.db
 
-EXPOSE 8000
+EXPOSE 18001
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "18001", "--workers", "4"]
