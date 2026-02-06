@@ -15,7 +15,7 @@ router = APIRouter(
 @router.get("/", response_model=List[VerseWithDetails])
 def get_verses(
     translation: str = Query(..., description="Translation abbreviation (e.g., KJV, NIV)"),
-    book: str = Query(..., description="Book name (e.g., Genesis, John)"),
+    book_id: int = Query(..., description="Book id (integer)"),
     chapter: int = Query(..., description="Chapter number"),
     verse_start: Optional[int] = Query(None, description="Starting verse number"),
     verse_end: Optional[int] = Query(None, description="Ending verse number (for range)"),
@@ -51,9 +51,9 @@ def get_verses(
             FROM verses v
             JOIN translations t ON v.translation_id = t.id
             JOIN books b ON v.book_id = b.id
-            WHERE t.abbreviation = ? AND b.name = ? AND v.chapter = ?
+            WHERE t.abbreviation = ? AND b.id = ? AND v.chapter = ?
         """
-        params = [translation.upper(), book, chapter]
+        params = [translation.upper(), book_id, chapter]
         
         if verse_start is not None:
             if verse_end is not None:
@@ -163,7 +163,7 @@ def search_verses(
 @router.get("/chapter/all", response_model=List[VerseWithDetails])
 def get_chapter(
     translation: str = Query(..., description="Translation abbreviation (e.g., KJV, NIV)"),
-    book: str = Query(..., description="Book name (e.g., Genesis, John)"),
+    book_id: int = Query(..., description="Book id (integer)"),
     chapter: int = Query(..., description="Chapter number")
 ):
     """
@@ -194,10 +194,10 @@ def get_chapter(
             FROM verses v
             JOIN translations t ON v.translation_id = t.id
             JOIN books b ON v.book_id = b.id
-            WHERE t.abbreviation = ? AND b.name = ? AND v.chapter = ?
+            WHERE t.abbreviation = ? AND b.id = ? AND v.chapter = ?
             ORDER BY v.verse
         """
-        params = [translation.upper(), book, chapter]
+        params = [translation.upper(), book_id, chapter]
         
         cursor = conn.execute(query, params)
         verses = [VerseWithDetails(**dict(row)) for row in cursor.fetchall()]
